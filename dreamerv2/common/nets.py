@@ -380,25 +380,28 @@ class MLP(common.Module):
         return self.get("out", DistLayer, self._shape, **self._out)(x)
 
 
-class GRUCell(tf.keras.layers.AbstractRNNCell):
+from tensorflow.keras.layers import Layer
 
+
+class GRUCell(Layer):
     def __init__(self, size, norm=False, act="tanh", update_bias=-1, **kwargs):
         super().__init__()
         self._size = size
         self._act = get_act(act)
         self._norm = norm
         self._update_bias = update_bias
-        self._layer = tfkl.Dense(3 * size, use_bias=norm is not None, **kwargs)
+        self._layer = tf.keras.layers.Dense(
+            3 * size, use_bias=norm is not None, **kwargs
+        )
         if norm:
-            self._norm = tfkl.LayerNormalization(dtype=tf.float32)
+            self._norm = tf.keras.layers.LayerNormalization(dtype=tf.float32)
 
     @property
     def state_size(self):
         return self._size
 
-    @tf.function
-    def call(self, inputs, state):
-        state = state[0]  # Keras wraps the state in a list.
+    def call(self, inputs, states):
+        state = states[0]  # Keras wraps the state in a list.
         parts = self._layer(tf.concat([inputs, state], -1))
         if self._norm:
             dtype = parts.dtype
