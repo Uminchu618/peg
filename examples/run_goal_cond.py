@@ -3336,10 +3336,14 @@ def main():
     for gpu in tf.config.experimental.list_physical_devices("GPU"):
         tf.config.experimental.set_memory_growth(gpu, True)
     assert config.precision in (16, 32), config.precision
-    if config.precision == 16:
-        from tensorflow.keras import mixed_precision as prec
+    # if config.precision == 16:
+    #     from tensorflow.keras import mixed_precision as prec
+    #     # prec.set_policy(prec.Policy("mixed_float16"))
+    from tensorflow.keras.mixed_precision import Policy, set_global_policy
 
-        prec.set_policy(prec.Policy("mixed_float16"))
+    if config.precision == 16:
+        # Mixed Precision Policy を設定
+        set_global_policy(Policy("mixed_float16"))
 
     """ ========= BEGIN TRAIN ALGORITHM ========"""
     dv2.train(
